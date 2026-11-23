@@ -5,8 +5,7 @@ export default function TransactionItem({ transaction, onEdit, onDelete }) {
   const isIncome = transaction.type === 'income';
   return (
     <div className="flex items-center gap-4 p-3.5 rounded-xl transition-colors group cursor-default"
-      style={{ '--hover': '#0a1510' }}
-      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#0a1510'}
+      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
       onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
     >
       <div className="p-2.5 rounded-xl flex-shrink-0"
@@ -18,7 +17,7 @@ export default function TransactionItem({ transaction, onEdit, onDelete }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sm text-white truncate">
+          <span className="font-medium text-sm truncate" style={{ color: 'var(--text-primary)' }}>
             {transaction.description || transaction.category}
           </span>
           <span
@@ -28,7 +27,7 @@ export default function TransactionItem({ transaction, onEdit, onDelete }) {
             {transaction.category}
           </span>
         </div>
-        <div className="text-xs mt-0.5" style={{ color: '#4a7a73' }}>
+        <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
           {formatDate(transaction.date)}
         </div>
       </div>

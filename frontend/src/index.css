@@ -2,29 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables ── */
+:root {
+  --bg-main:          #f8fafc;
+  --bg-card:          #ffffff;
+  --bg-card-border:   #e8edf0;
+  --bg-sidebar:       #0d2d2a;
+  --bg-navbar:        #ffffff;
+  --bg-navbar-border: #e8edf0;
+  --bg-input:         #f1f5f4;
+  --bg-input-border:  #d1dcd9;
+  --bg-hover:         #f1f5f4;
+  --bg-modal:         #ffffff;
+  --text-primary:     #0f1f1c;
+  --text-secondary:   #4a7a73;
+  --text-muted:       #94a3b0;
+  --text-nav:         #3a6560;
+  --text-nav-hover:   #0f1f1c;
+  --color-green:      #10b981;
+  --color-green-dim:  rgba(16,185,129,0.1);
+  --color-red:        #ef4444;
+  --color-red-dim:    rgba(239,68,68,0.1);
+  --scrollbar-thumb:  #c8d9d5;
+  --shadow:           0 4px 24px rgba(0,0,0,0.08);
+}
+
+.dark {
+  --bg-main:          #060d0b;
+  --bg-card:          #0f1a16;
+  --bg-card-border:   #1a2e28;
+  --bg-sidebar:       #0a1510;
+  --bg-navbar:        #0a1510;
+  --bg-navbar-border: #1a2e28;
+  --bg-input:         #0a1510;
+  --bg-input-border:  #1e3830;
+  --bg-hover:         #1a2e28;
+  --bg-modal:         #0f1a16;
+  --text-primary:     #e2ede9;
+  --text-secondary:   #4a9e95;
+  --text-muted:       #4a7a73;
+  --text-nav:         #6aada4;
+  --text-nav-hover:   #ffffff;
+  --color-green:      #10b981;
+  --color-green-dim:  rgba(16,185,129,0.1);
+  --color-red:        #ef4444;
+  --color-red-dim:    rgba(239,68,68,0.1);
+  --scrollbar-thumb:  #1e3d37;
+  --shadow:           0 4px 24px rgba(0,0,0,0.4);
+}
+
 @layer base {
   html, body {
+    font-family: 'Inter', system-ui, sans-serif;
     @apply antialiased;
   }
   body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: #060d0b;
-    color: #e2ede9;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #1e3d37; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
 }
 
 @layer components {
   /* ── Layout ── */
-  .app-bg { background-color: #060d0b; }
+  .app-bg { background-color: var(--bg-main); }
 
   /* ── Cards ── */
   .card {
-    background-color: #0f1a16;
-    border: 1px solid #1a2e28;
+    background-color: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
     border-radius: 1rem;
+    box-shadow: var(--shadow);
   }
 
   /* ── Buttons ── */
@@ -35,65 +86,85 @@
   .btn-primary:hover { background: linear-gradient(135deg, #059669, #047857); }
 
   .btn-secondary {
-    background-color: #1a2e28;
-    color: #a0c4be;
+    background-color: var(--bg-hover);
+    color: var(--text-secondary);
+    border: 1px solid var(--bg-card-border);
     @apply font-medium px-4 py-2 rounded-xl transition-all duration-200;
   }
-  .btn-secondary:hover { background-color: #1f3830; }
+  .btn-secondary:hover { background-color: var(--bg-input); }
 
   .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl transition-all duration-200;
+    @apply bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-xl transition-all duration-200;
   }
 
   /* ── Inputs ── */
   .input-field {
     @apply w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200;
-    background-color: #0a1510;
-    border: 1px solid #1e3830;
-    color: #e2ede9;
+    background-color: var(--bg-input);
+    border: 1px solid var(--bg-input-border);
+    color: var(--text-primary);
   }
-  .input-field::placeholder { color: #4a7a73; }
+  .input-field::placeholder { color: var(--text-muted); }
   .input-field:focus {
     @apply outline-none;
     border-color: #10b981;
     box-shadow: 0 0 0 2px rgba(16,185,129,0.15);
   }
+  /* Date input calendar icon fix */
+  .input-field[type="date"]::-webkit-calendar-picker-indicator {
+    filter: var(--calendar-filter, invert(0));
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  .dark .input-field[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
+  }
+  /* Select option styling */
+  .input-field option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+  }
 
   .label {
     @apply block text-xs font-semibold mb-1.5 uppercase tracking-wide;
-    color: #4a9e95;
+    color: var(--text-secondary);
   }
 
-  /* ── Stat card variants (dark) ── */
+  /* ── Stat card variants ── */
   .stat-income  {
-    background: linear-gradient(135deg, #0a2318 0%, #0d2d1f 100%);
-    border: 1px solid #164d35;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
   }
   .stat-expense {
-    background: linear-gradient(135deg, #200e0e 0%, #2d1515 100%);
-    border: 1px solid #4d1a1a;
+    background: linear-gradient(135deg, #fff1f0 0%, #ffe4e1 100%);
+    border: 1px solid #fecaca;
   }
   .stat-balance {
-    background: linear-gradient(135deg, #0a1428 0%, #0f1e40 100%);
-    border: 1px solid #1a3060;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
   }
   .stat-goals {
-    background: linear-gradient(135deg, #1e1500 0%, #2d2010 100%);
-    border: 1px solid #4d3800;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fde68a;
   }
+  .dark .stat-income  { background: linear-gradient(135deg,#0a2318,#0d2d1f); border-color:#164d35; }
+  .dark .stat-expense { background: linear-gradient(135deg,#200e0e,#2d1515); border-color:#4d1a1a; }
+  .dark .stat-balance { background: linear-gradient(135deg,#0a1428,#0f1e40); border-color:#1a3060; }
+  .dark .stat-goals   { background: linear-gradient(135deg,#1e1500,#2d2010); border-color:#4d3800; }
 
   /* ── Color helpers ── */
   .income-text  { color: #10b981; }
   .expense-text { color: #ef4444; }
-  .teal-text    { color: #10b981; }
-  .income-bg    { background-color: #0a2318; }
-  .expense-bg   { background-color: #200e0e; }
+  .teal-text    { color: #0d9488; }
+  .income-bg    { background-color: rgba(16,185,129,0.1); }
+  .expense-bg   { background-color: rgba(239,68,68,0.1); }
 
   /* ── Nav active ── */
   .nav-active {
     background-color: #10b981;
-    color: #fff;
+    color: #fff !important;
     font-weight: 600;
   }
-  .nav-active svg { color: #fff; }
+  .nav-active svg { color: #fff !important; }
 }

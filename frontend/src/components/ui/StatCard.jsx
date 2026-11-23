@@ -4,9 +4,9 @@ export default function StatCard({ title, value, icon: Icon, iconBg, iconColor, 
       {/* Top row */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: '#4a9e95' }}>{title}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-          {subtitle && <p className="text-xs mt-0.5" style={{ color: '#4a7a73' }}>{subtitle}</p>}
+          <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-secondary)' }}>{title}</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
+          {subtitle && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>}
         </div>
         <div className="p-2.5 rounded-xl flex-shrink-0" style={{ backgroundColor: 'rgba(16,185,129,0.1)' }}>
           <Icon size={20} className={iconColor} />
@@ -19,7 +19,7 @@ export default function StatCard({ title, value, icon: Icon, iconBg, iconColor, 
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981' }}>
             {badge}
           </span>
-          <span className="text-xs" style={{ color: '#4a7a73' }}>vs. last month</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>vs. last month</span>
         </div>
       )}
 

@@ -3,21 +3,24 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  // Always dark — forced dark mode
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('wealthwise_theme') || 'light';
+  });
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('wealthwise_theme', 'dark');
-  }, []);
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('wealthwise_theme', theme);
+  }, [theme]);
 
-  const toggleTheme = () => {
-    // Keep dark, do nothing (or allow toggle for future)
-    setTheme('dark');
-  };
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: true }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>
       {children}
     </ThemeContext.Provider>
   );

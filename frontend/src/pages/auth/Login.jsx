@@ -145,13 +145,13 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo hint */}
+          {/* Demo hint 
           <div className="mt-5 p-3.5 rounded-xl text-center"
             style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: '1px dashed rgba(16,185,129,0.2)' }}>
             <p className="text-xs mb-1" style={{ color: '#4a7a73' }}>Demo Account</p>
             <p className="text-xs font-semibold" style={{ color: '#10b981' }}>ayush@wealthwise.com</p>
             <p className="text-xs font-semibold" style={{ color: '#10b981' }}>password123</p>
-          </div>
+          </div>*/}
 
           <p className="text-center text-sm mt-6" style={{ color: '#4a7a73' }}>
             Don't have an account?{' '}

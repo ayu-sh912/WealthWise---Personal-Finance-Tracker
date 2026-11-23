@@ -19,9 +19,9 @@ export default function GoalCard({ goal, onContribute, onEdit, onDelete }) {
             <Target size={20} style={{ color: goal.color }} />
           </div>
           <div>
-            <h3 className="font-semibold text-white">{goal.name}</h3>
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{goal.name}</h3>
             {goal.deadline && (
-              <div className="flex items-center gap-1 text-xs mt-0.5" style={{ color: '#4a7a73' }}>
+              <div className="flex items-center gap-1 text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                 <Calendar size={11} />
                 <span>{formatDate(goal.deadline)}</span>
               </div>
@@ -37,14 +37,14 @@ export default function GoalCard({ goal, onContribute, onEdit, onDelete }) {
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex justify-between text-xs mb-1.5">
-          <span style={{ color: '#4a7a73' }}>{formatCurrency(goal.currentAmount)} saved</span>
+          <span style={{ color: 'var(--text-muted)' }}>{formatCurrency(goal.currentAmount)} saved</span>
           <span className="font-medium" style={{ color: goal.color }}>{formatPercent(progress, 0)}</span>
         </div>
-        <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#1a2e28' }}>
+        <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-hover)' }}>
           <div className="h-full rounded-full transition-all duration-500"
             style={{ width: `${progress}%`, backgroundColor: goal.color }} />
         </div>
-        <div className="flex justify-between text-xs mt-1.5" style={{ color: '#4a7a73' }}>
+        <div className="flex justify-between text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
           <span>Target: {formatCurrency(goal.targetAmount)}</span>
           {remaining > 0 && <span>{formatCurrency(remaining)} to go</span>}
         </div>

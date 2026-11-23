@@ -3,8 +3,8 @@ export default function LoadingSpinner({ size = 'md', text = '' }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       <div className={`${sizes[size]} rounded-full animate-spin`}
-        style={{ border: '2px solid #1a2e28', borderTopColor: '#10b981' }} />
-      {text && <p className="text-sm" style={{ color: '#4a7a73' }}>{text}</p>}
+        style={{ border: '2px solid var(--bg-card-border)', borderTopColor: '#10b981' }} />
+      {text && <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{text}</p>}
     </div>
   );
 }

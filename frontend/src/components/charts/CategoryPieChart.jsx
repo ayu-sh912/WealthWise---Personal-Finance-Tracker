@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '../../utils/formatters';
+import { useTheme } from '../../context/ThemeContext';
 
 const RADIAN = Math.PI / 180;
 const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -14,23 +15,24 @@ const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) =>
   );
 };
 
-const CustomTooltip = ({ active, payload }) => {
+function CustomTooltip({ active, payload, isDark }) {
   if (!active || !payload?.length) return null;
   const { name, value, color } = payload[0].payload;
   return (
-    <div style={{ backgroundColor: '#0f1a16', border: '1px solid #1a2e28', borderRadius: 12, padding: '10px 14px' }}>
+    <div style={{ backgroundColor: isDark ? '#0f1a16' : '#ffffff', border: `1px solid ${isDark ? '#1a2e28' : '#e8edf0'}`, borderRadius: 12, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color, display: 'inline-block' }} />
-        <span style={{ color: '#fff', fontSize: 11, fontWeight: 600 }}>{name}</span>
+        <span style={{ color: isDark ? '#fff' : '#0f1f1c', fontSize: 11, fontWeight: 600 }}>{name}</span>
       </div>
-      <div style={{ color: '#4a7a73', fontSize: 11 }}>{formatCurrency(value)}</div>
+      <div style={{ color: isDark ? '#4a7a73' : '#94a3b0', fontSize: 11 }}>{formatCurrency(value)}</div>
     </div>
   );
-};
+}
 
 export default function CategoryPieChart({ data }) {
+  const { isDark } = useTheme();
   if (!data?.length) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, color: '#4a7a73', fontSize: 14 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, color: 'var(--text-muted)', fontSize: 14 }}>
       No data available
     </div>
   );
@@ -43,7 +45,7 @@ export default function CategoryPieChart({ data }) {
             <Cell key={`cell-${i}`} fill={entry.color} stroke="none" />
           ))}
         </Pie>
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip isDark={isDark} />} />
       </PieChart>
     </ResponsiveContainer>
   );
