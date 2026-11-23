@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const connectDB = require('./config/db');
+require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
@@ -12,9 +12,6 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-
-// Connect to MongoDB
-connectDB();
 
 const app = express();
 

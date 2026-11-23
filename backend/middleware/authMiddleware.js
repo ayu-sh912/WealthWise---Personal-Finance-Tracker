@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const pool = require('../config/db');
 
 const protect = async (req, res, next) => {
   let token;
@@ -14,10 +14,23 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
-    if (!req.user) {
+    const result = await pool.query(
+      'SELECT id, name, email, currency FROM users WHERE id = $1',
+      [decoded.id]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(401).json({ success: false, message: 'User not found' });
     }
+
+    const user = result.rows[0];
+    req.user = {
+      _id: user.id,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      currency: user.currency,
+    };
     next();
   } catch (error) {
     return res.status(401).json({ success: false, message: 'Not authorized, token invalid' });

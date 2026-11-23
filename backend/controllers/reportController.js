@@ -1,33 +1,41 @@
-const Transaction = require('../models/Transaction');
+const pool = require('../config/db');
 
 // @desc    Get financial summary
 // @route   GET /api/reports/summary
 // @access  Private
 const getSummary = async (req, res) => {
   const { dateFrom, dateTo } = req.query;
-  const filter = { user: req.user._id };
+  const params = [req.user._id];
+  const conditions = ['user_id = $1'];
 
-  if (dateFrom || dateTo) {
-    filter.date = {};
-    if (dateFrom) filter.date.$gte = new Date(dateFrom);
-    if (dateTo) filter.date.$lte = new Date(new Date(dateTo).setHours(23, 59, 59, 999));
+  if (dateFrom) {
+    params.push(new Date(dateFrom));
+    conditions.push(`date >= $${params.length}`);
+  }
+  if (dateTo) {
+    params.push(new Date(new Date(dateTo).setHours(23, 59, 59, 999)));
+    conditions.push(`date <= $${params.length}`);
   }
 
-  const result = await Transaction.aggregate([
-    { $match: filter },
-    {
-      $group: {
-        _id: '$type',
-        total: { $sum: '$amount' },
-        count: { $sum: 1 },
-      },
-    },
-  ]);
+  const query = `
+    SELECT type, SUM(amount)::numeric AS total, COUNT(*)::int AS count
+    FROM transactions
+    WHERE ${conditions.join(' AND ')}
+    GROUP BY type
+  `;
+
+  const result = await pool.query(query, params);
 
   let totalIncome = 0, totalExpense = 0, incomeCount = 0, expenseCount = 0;
-  result.forEach((r) => {
-    if (r._id === 'income') { totalIncome = r.total; incomeCount = r.count; }
-    if (r._id === 'expense') { totalExpense = r.total; expenseCount = r.count; }
+  result.rows.forEach((r) => {
+    if (r.type === 'income') {
+      totalIncome = parseFloat(r.total) || 0;
+      incomeCount = parseInt(r.count) || 0;
+    }
+    if (r.type === 'expense') {
+      totalExpense = parseFloat(r.total) || 0;
+      expenseCount = parseInt(r.count) || 0;
+    }
   });
 
   const balance = totalIncome - totalExpense;
@@ -56,20 +64,19 @@ const getMonthly = async (req, res) => {
   twelveMonthsAgo.setDate(1);
   twelveMonthsAgo.setHours(0, 0, 0, 0);
 
-  const result = await Transaction.aggregate([
-    { $match: { user: req.user._id, date: { $gte: twelveMonthsAgo } } },
-    {
-      $group: {
-        _id: {
-          year: { $year: '$date' },
-          month: { $month: '$date' },
-          type: '$type',
-        },
-        total: { $sum: '$amount' },
-      },
-    },
-    { $sort: { '_id.year': 1, '_id.month': 1 } },
-  ]);
+  const query = `
+    SELECT 
+      EXTRACT(YEAR FROM date)::int AS year,
+      EXTRACT(MONTH FROM date)::int AS month,
+      type,
+      SUM(amount)::numeric AS total
+    FROM transactions
+    WHERE user_id = $1 AND date >= $2
+    GROUP BY 1, 2, 3
+    ORDER BY 1 ASC, 2 ASC
+  `;
+
+  const result = await pool.query(query, [req.user._id, twelveMonthsAgo]);
 
   // Build 12-month array
   const months = [];
@@ -86,11 +93,11 @@ const getMonthly = async (req, res) => {
     });
   }
 
-  result.forEach(({ _id, total }) => {
-    const m = months.find((mo) => mo.year === _id.year && mo.month === _id.month);
+  result.rows.forEach(({ year, month, type, total }) => {
+    const m = months.find((mo) => mo.year === year && mo.month === month);
     if (m) {
-      if (_id.type === 'income') m.income = total;
-      if (_id.type === 'expense') m.expense = total;
+      if (type === 'income') m.income = parseFloat(total) || 0;
+      if (type === 'expense') m.expense = parseFloat(total) || 0;
     }
   });
 
@@ -102,34 +109,39 @@ const getMonthly = async (req, res) => {
 // @access  Private
 const getCategoryBreakdown = async (req, res) => {
   const { type = 'expense', dateFrom, dateTo } = req.query;
-  const filter = { user: req.user._id, type };
+  const params = [req.user._id, type];
+  const conditions = ['user_id = $1', 'type = $2'];
 
-  if (dateFrom || dateTo) {
-    filter.date = {};
-    if (dateFrom) filter.date.$gte = new Date(dateFrom);
-    if (dateTo) filter.date.$lte = new Date(new Date(dateTo).setHours(23, 59, 59, 999));
+  if (dateFrom) {
+    params.push(new Date(dateFrom));
+    conditions.push(`date >= $${params.length}`);
+  }
+  if (dateTo) {
+    params.push(new Date(new Date(dateTo).setHours(23, 59, 59, 999)));
+    conditions.push(`date <= $${params.length}`);
   }
 
-  const result = await Transaction.aggregate([
-    { $match: filter },
-    {
-      $group: {
-        _id: '$category',
-        total: { $sum: '$amount' },
-        count: { $sum: 1 },
-        color: { $first: '$categoryColor' },
-      },
-    },
-    { $sort: { total: -1 } },
-  ]);
+  const query = `
+    SELECT 
+      category AS name,
+      category_color AS color,
+      SUM(amount)::numeric AS total,
+      COUNT(*)::int AS count
+    FROM transactions
+    WHERE ${conditions.join(' AND ')}
+    GROUP BY category, category_color
+    ORDER BY total DESC
+  `;
 
-  const grandTotal = result.reduce((sum, r) => sum + r.total, 0);
-  const data = result.map((r) => ({
-    name: r._id,
-    value: r.total,
-    count: r.count,
+  const result = await pool.query(query, params);
+
+  const grandTotal = result.rows.reduce((sum, r) => sum + (parseFloat(r.total) || 0), 0);
+  const data = result.rows.map((r) => ({
+    name: r.name,
+    value: parseFloat(r.total) || 0,
+    count: parseInt(r.count) || 0,
     color: r.color || '#6366f1',
-    percentage: grandTotal > 0 ? ((r.total / grandTotal) * 100).toFixed(1) : 0,
+    percentage: grandTotal > 0 ? (((parseFloat(r.total) || 0) / grandTotal) * 100).toFixed(1) : 0,
   }));
 
   res.json({ success: true, data, grandTotal });
@@ -143,20 +155,13 @@ const getTrends = async (req, res) => {
   eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
   eightWeeksAgo.setHours(0, 0, 0, 0);
 
-  const result = await Transaction.aggregate([
-    { $match: { user: req.user._id, date: { $gte: eightWeeksAgo } } },
-    {
-      $group: {
-        _id: {
-          week: { $week: '$date' },
-          year: { $year: '$date' },
-          type: '$type',
-        },
-        total: { $sum: '$amount' },
-      },
-    },
-    { $sort: { '_id.year': 1, '_id.week': 1 } },
-  ]);
+  const query = `
+    SELECT type, amount, date
+    FROM transactions
+    WHERE user_id = $1 AND date >= $2
+  `;
+
+  const result = await pool.query(query, [req.user._id, eightWeeksAgo]);
 
   // Build 8-week array
   const weeks = [];
@@ -173,11 +178,15 @@ const getTrends = async (req, res) => {
     });
   }
 
-  result.forEach(({ _id, total }) => {
-    const w = weeks.find((wk) => wk.week === _id.week && wk.year === _id.year);
+  result.rows.forEach(({ type, amount, date }) => {
+    const d = new Date(date);
+    const weekNum = getWeekNumber(d);
+    const year = d.getFullYear();
+    const w = weeks.find((wk) => wk.week === weekNum && wk.year === year);
     if (w) {
-      if (_id.type === 'income') w.income = total;
-      if (_id.type === 'expense') w.expense = total;
+      const val = parseFloat(amount) || 0;
+      if (type === 'income') w.income += val;
+      if (type === 'expense') w.expense += val;
     }
   });
 
