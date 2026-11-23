@@ -4,7 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-require('./config/db');
+const fs = require('fs');
+const path = require('path');
+const pool = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
@@ -13,26 +15,26 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 
+// Auto-initialize PostgreSQL tables if not present
+const initDB = async () => {
+  try {
+    const schemaSql = fs.readFileSync(path.join(__dirname, 'models', 'schema.sql'), 'utf-8');
+    await pool.query(schemaSql);
+    console.log('✅ PostgreSQL tables verified/created automatically');
+  } catch (err) {
+    console.error('❌ DB Init Error:', err.message);
+  }
+};
+initDB();
+
 const app = express();
 
-// Middleware
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
+// Middleware: Allow CORS from any origin (Vercel, localhost, etc.)
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true,
   credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
